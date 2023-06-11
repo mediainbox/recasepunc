@@ -40,6 +40,7 @@ default_flavors = {
     'en': 'bert-base-uncased',
     'zh': 'ckiplab/bert-base-chinese',
     'it': 'dbmdz/bert-base-italian-uncased',
+    'es': 'dccuchile/bert-base-spanish-wwm-uncased',
 }
 
 
@@ -51,7 +52,7 @@ class Config(argparse.Namespace):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        assert self.lang in ['fr', 'en', 'zh', 'it']
+        assert self.lang in ['fr', 'en', 'zh', 'it', 'es']
 
         if 'lang' in kwargs and ('flavor' not in kwargs or kwargs['flavor'] is None):
             self.flavor = default_flavors[self.lang]
@@ -247,6 +248,25 @@ def train(config, train_x_fn, train_y_fn, valid_x_fn, valid_y_fn, checkpoint_pat
     model = Model(config.flavor, config.device)
 
     fit(config, model, checkpoint_path, train_loader, valid_loader, config.updates, config.period, config.lr)
+
+
+def split_data(_config, x_fn, y_fn):
+    X = torch.load(x_fn)
+    Y = torch.load(y_fn)
+    ds = TensorDataset(X, Y)
+    # split data
+    n = len(ds)
+    n_train = int(0.8 * n)
+    n_test = int(0.1 * n)
+    n_val = n - n_train - n_test
+    train_ds, test_ds, val_ds = torch.utils.data.random_split(ds, [n_train, n_test, n_val])
+    # save x and y for each dataset in different files
+    torch.save(train_ds.dataset.tensors[0], x_fn.replace('.x', '_train.x'))
+    torch.save(train_ds.dataset.tensors[1], y_fn.replace('.y', '_train.y'))
+    torch.save(test_ds.dataset.tensors[0], x_fn.replace('.x', '_test.x'))
+    torch.save(test_ds.dataset.tensors[1], y_fn.replace('.y', '_test.y'))
+    torch.save(val_ds.dataset.tensors[0], x_fn.replace('.x', '_val.x'))
+    torch.save(val_ds.dataset.tensors[1], y_fn.replace('.y', '_val.y'))
 
 
 def run_eval(config, test_x_fn, test_y_fn, checkpoint_path):
@@ -724,6 +744,8 @@ def main(config, action, args):
         make_tensors(config, *args)
     elif action == 'preprocess':
         preprocess_text(config, *args)
+    elif action == 'split-data':
+        split_data(config, *args)
     else:
         print(f'invalid action "{action}"')
         sys.exit(1)

@@ -115,24 +115,35 @@ Notes: You need to modify file names adequately.  Training tensors are precomput
 
 Stage 0: download text data
 
+Stage 0.5: create a folder to maintain all data related out of this code
+```
+mkdir training_folder
+```
+
 Stage 1: tokenize and normalize text with Moses tokenizer, and extract recasing and repunctuation labels
 ```
-python recasepunc.py preprocess --lang $LANG < input.txt > input.case+punc
+python recasepunc.py preprocess --lang $LANG < input.txt > training_folder/input.case+punc
 ```
 
 Stage 2: sub-tokenize with Flaubert tokenizer, and generate pytorch tensors
 ```
-python recasepunc.py tensorize input.case+punc input.case+punc.x input.case+punc.y --lang $LANG
+python recasepunc.py tensorize training_folder/input.case+punc training_folder/input.case+punc.x training_folder/input.case+punc.y --lang $LANG
 ```
 
-Stage 3: train model
+Stage 3: split data in training valid and test 
 ```
-python recasepunc.py train train.x train.y valid.x valid.y checkpoint/path --lang $LANG
+python recasepunc.py split-data training_folder/input.case+punc.x training_folder/input.case+punc.y
 ```
 
-Stage 4: evaluate performance on a test set 
+Stage 4: train model
 ```
-python recasepunc.py eval test.x test.y checkpoint/path.iteration
+mkdir checkpoint/$LANG
+python recasepunc.py train training_folder/input.case+punc_train.x training_folder/input.case+punc_train.y training_folder/input.case+punc_val.x training_folder/input.case+punc_val.y checkpoint/path --lang $LANG
+```
+
+Stage 5: evaluate performance on a test set 
+```
+python recasepunc.py eval training_folder/input.case+punc_test.x training_folder/input.case+punc_test.y checkpoint/$LANG.iteration
 ```
 
 Notes
