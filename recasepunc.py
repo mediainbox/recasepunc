@@ -251,16 +251,19 @@ def train(config, train_x_fn, train_y_fn, valid_x_fn, valid_y_fn, checkpoint_pat
 
 
 def split_data(_config, x_fn, y_fn):
+    print("Loading data...")
     X = torch.load(x_fn)
     Y = torch.load(y_fn)
     ds = TensorDataset(X, Y)
     # split data
+    print("Splitting data...")
     n = len(ds)
     n_train = int(0.8 * n)
     n_test = int(0.1 * n)
     n_val = n - n_train - n_test
     train_ds, test_ds, val_ds = torch.utils.data.random_split(ds, [n_train, n_test, n_val])
     # save x and y for each dataset in different files
+    print("Saving train, test and validation data...")
     torch.save(train_ds.dataset.tensors[0], x_fn.replace('.x', '_train.x'))
     torch.save(train_ds.dataset.tensors[1], y_fn.replace('.y', '_train.y'))
     torch.save(test_ds.dataset.tensors[0], x_fn.replace('.x', '_test.x'))
