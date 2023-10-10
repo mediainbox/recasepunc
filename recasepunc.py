@@ -309,6 +309,9 @@ class CasePuncPredictor:
         init(self.config)
 
         self.model = Model(flavor, self.config.device)
+        if torch.cuda.device_count() > 1:
+            print(f"Using {torch.cuda.device_count()} GPUs!")
+            self.model = nn.DataParallel(self.model)
         self.model.load_state_dict(loaded['model_state_dict'])
         self.model.to(self.config.device)
 
