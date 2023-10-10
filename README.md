@@ -32,6 +32,9 @@ Changelog:
 
 Installation
 ------------
+First install OS Deps:
+
+apt install rustc cargo
 
 Use your favourite method for installing Python requirements. For example:
 ```
