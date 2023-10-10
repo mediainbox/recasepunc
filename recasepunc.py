@@ -15,13 +15,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import torch.distributed as dist
 from torch.utils.data import TensorDataset, DataLoader
 # from mosestokenizer import *
 from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer, BertTokenizer
-
-dist.init_process_group() 
 
 default_config = argparse.Namespace(
     seed=871253,
@@ -251,7 +248,7 @@ def train(config, train_x_fn, train_y_fn, valid_x_fn, valid_y_fn, checkpoint_pat
     model = Model(config.flavor, config.device)
     if torch.cuda.device_count() > 1:
         print(f"Using {torch.cuda.device_count()} GPUs!")
-        model = nn.parallel.DistributedDataParallel(model)
+        model = nn.DataParallel(model)
     fit(config, model, checkpoint_path, train_loader, valid_loader, config.updates, config.period, config.lr)
 
 
@@ -290,7 +287,7 @@ def run_eval(config, test_x_fn, test_y_fn, checkpoint_path):
     model = Model(config.flavor, config.device)
     if torch.cuda.device_count() > 1:
         print(f"Using {torch.cuda.device_count()} GPUs!")
-        model = nn.parallel.DistributedDataParallel(model)
+        model = nn.DataParallel(model)
     model.load_state_dict(loaded['model_state_dict'])
 
     print(*compute_performance(config, model, test_loader))
@@ -319,7 +316,7 @@ class CasePuncPredictor:
         self.model = Model(flavor, self.config.device)
         if torch.cuda.device_count() > 1:
             print(f"Using {torch.cuda.device_count()} GPUs!")
-            self.model = nn.parallel.DistributedDataParallel(self.model)
+            self.model = nn.DataParallel(self.model)
         self.model.load_state_dict(loaded['model_state_dict'])
         self.model.to(self.config.device)
 
@@ -384,7 +381,7 @@ def generate_predictions(config, checkpoint_path):
     model = Model(config.flavor, config.device)
     if torch.cuda.device_count() > 1:
         print(f"Using {torch.cuda.device_count()} GPUs!")
-        model = nn.parallel.DistributedDataParallel(model)
+        model = nn.DataParallel(model)
     model.load_state_dict(loaded['model_state_dict'])
 
     rev_case = {b: a for a, b in case.items()}
