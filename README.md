@@ -32,6 +32,9 @@ Changelog:
 
 Installation
 ------------
+First install OS Deps:
+
+apt install rustc cargo
 
 Use your favourite method for installing Python requirements. For example:
 ```
@@ -137,7 +140,7 @@ python recasepunc.py split-data training_folder/input.case+punc.x training_folde
 
 Stage 4: train model
 ```
-mkdir checkpoint/$LANG
+mkdir -p checkpoint/$LANG
 python recasepunc.py train training_folder/input.case+punc_train.x training_folder/input.case+punc_train.y training_folder/input.case+punc_val.x training_folder/input.case+punc_val.y checkpoint/path --lang $LANG
 ```
 
