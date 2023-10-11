@@ -43,7 +43,8 @@ default_flavors = {
     'es': 'dccuchile/bert-base-spanish-wwm-uncased',
 }
 
-
+# TODO change DataParallel to DistributedDataParallel
+# https://pytorch.org/docs/stable/notes/cuda.html#cuda-nn-ddp-instead
 class Config(argparse.Namespace):
     def __init__(self, **kwargs):
         super().__init__()
