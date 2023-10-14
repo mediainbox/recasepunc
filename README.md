@@ -33,9 +33,9 @@ Changelog:
 Installation
 ------------
 First install OS Deps:
-
+```
 apt install rustc cargo
-
+```
 Use your favourite method for installing Python requirements. For example:
 ```
 python -m venv env
@@ -110,6 +110,21 @@ All models are trained from the 1st 100M tokens from [Common Crawl](http://data.
 }
 ```
 
+We create the ES model, this was created with the FIRST 100k lines from Crawl data and later tokenized
+```
+tail -n 100000 es.txt > sample100k.es
+```
+
+```
+{
+  "iteration": "24000",
+  "train_loss": "0.0021631351880828332",
+  "valid_loss": "0.00027729603337700326",
+  "valid_accuracy_case": "0.9994236930928776",
+  "valid_accuracy_punc": "0.9997003815549178",
+  "valid_fscore": "{0: 0.9979087710380554, 1: 0.9983382821083069, 2: 0.9978544116020203, 3: 0.9914993643760681, 4: 0.9883458614349365}",
+}
+```
 
 Training 
 --------
@@ -125,7 +140,7 @@ mkdir training_folder
 
 Stage 1: tokenize and normalize text with Moses tokenizer, and extract recasing and repunctuation labels
 ```
-python recasepunc.py preprocess --lang $LANG < input.txt > training_folder/input.case+punc
+python recasepunc.py preprocess --lang $LANG < sample100k.es > training_folder/input.case+punc
 ```
 
 Stage 2: sub-tokenize with Flaubert tokenizer, and generate pytorch tensors
@@ -141,7 +156,7 @@ python recasepunc.py split-data training_folder/input.case+punc.x training_folde
 Stage 4: train model
 ```
 mkdir -p checkpoint/$LANG
-python recasepunc.py train training_folder/input.case+punc_train.x training_folder/input.case+punc_train.y training_folder/input.case+punc_val.x training_folder/input.case+punc_val.y checkpoint/path --lang $LANG
+python recasepunc.py train training_folder/input.case+punc_train.x training_folder/input.case+punc_train.y training_folder/input.case+punc_val.x training_folder/input.case+punc_val.y checkpoint/$LANG --lang $LANG
 ```
 
 Stage 5: evaluate performance on a test set 
@@ -151,5 +166,7 @@ python recasepunc.py eval training_folder/input.case+punc_test.x training_folder
 
 Notes
 -----
+The training TIME was arround 72hs with 6x 3060 cards (120 Tflops)
 
 This work was not published, but a similar model is described in "FullStop: Multilingual Deep Models for Punctuation Prediction", Frank et al, 2021.
+
