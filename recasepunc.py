@@ -382,6 +382,13 @@ def generate_predictions(config, checkpoint_path):
     if torch.cuda.device_count() > 1:
         print(f"Using {torch.cuda.device_count()} GPUs!")
         model = nn.DataParallel(model)
+    new_state_dict = {}
+    original_state_dict = loaded['model_state_dict']
+    for key, value in original_state_dict.items():
+        if key.startswith('module.'):
+            new_state_dict[key[7:]] = value
+        else:
+            new_state_dict[key] = value
     model.load_state_dict(loaded['model_state_dict'])
 
     rev_case = {b: a for a, b in case.items()}
