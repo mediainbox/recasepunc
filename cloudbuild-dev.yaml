@@ -1,0 +1,31 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+        'build',
+        '-t', 'gcr.io/$PROJECT_ID/mi-recasepunc-api:$SHORT_SHA',
+        '-t', 'gcr.io/$PROJECT_ID/mi-recasepunc-api:latest',
+        '-f', 'docker/Dockerfile',
+        '.'
+    ]
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+        'push',
+        'gcr.io/$PROJECT_ID/mi-recasepunc-api:$SHORT_SHA',
+    ]
+  - name: 'gcr.io/cloud-builders/kubectl'
+    env: [
+        'CLOUDSDK_COMPUTE_REGION=us-central1',
+        'CLOUDSDK_CONTAINER_CLUSTER=logger'
+    ]
+    args: [
+        'patch',
+        'deployment', 'olaf-api-dev',
+        '-p', '{"spec": {"template": {"spec": {"containers": [{"name": "olaf-api-dev","image": "gcr.io/${PROJECT_ID}/mi-recasepunc-api:${SHORT_SHA}"}]}}}}'
+    ]
+
+
+images:
+  - 'gcr.io/$PROJECT_ID/mi-recasepunc-api:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/mi-recasepunc-api:latest'
+
+timeout: 1440s
