@@ -19,8 +19,8 @@ steps:
     ]
     args: [
         'patch',
-        'deployment', 'olaf-api-dev',
-        '-p', '{"spec": {"template": {"spec": {"containers": [{"name": "olaf-api-dev","image": "gcr.io/${PROJECT_ID}/mi-recasepunc-api:${SHORT_SHA}"}]}}}}'
+        'deployment', 'recasepunc-api-dev',
+        '-p', '{"spec": {"template": {"spec": {"containers": [{"name": "recasepunc-api-dev","image": "gcr.io/${PROJECT_ID}/mi-recasepunc-api:${SHORT_SHA}"}]}}}}'
     ]
 
 
